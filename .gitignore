@@ -1,0 +1,7 @@
+# downloaded JDK, Android SDK, Tor bundle and the debug signing key (build.sh fetches them)
+/.toolchain/
+# build output
+/build/
+*.apk
+*.log
+.DS_Store

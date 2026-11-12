@@ -1,0 +1,30 @@
+name: Something broke
+description: The app crashed, didn't start, or did the wrong thing
+labels: [bug]
+body:
+  - type: input
+    id: phone
+    attributes:
+      label: Phone and Android version
+      placeholder: Pixel 8, Android 15
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Sol version
+      description: Shown at the bottom of the panel's sidebar
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What you did, what you expected, what happened
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The lines shown on the "Sol didn't start" screen, or from `adb shell run-as io.solarae.sol cat files/sol/sol.log`. Remove pairing links and onion addresses you don't want public.
+      render: text

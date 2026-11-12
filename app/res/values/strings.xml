@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sol</string>
+    <string name="channel_name">Sol node</string>
+    <string name="channel_desc">Shown while this device\'s Sol node is running</string>
+    <string name="note_title">Sol is running</string>
+    <string name="note_text">Your paired devices can reach this phone.</string>
+    <string name="note_stop">Stop</string>
+</resources>

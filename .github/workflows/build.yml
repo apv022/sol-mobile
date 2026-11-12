@@ -1,0 +1,21 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Build the APK
+        run: ./build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sol-apk
+          path: build/sol.apk

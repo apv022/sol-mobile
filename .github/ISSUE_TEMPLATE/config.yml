@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A problem with pairing, the panel, or the protocol
+    url: https://github.com/apv022/sol/issues
+    about: Those live in the main Sol repository.
+  - name: Report a vulnerability privately
+    url: https://github.com/apv022/sol-mobile/security/advisories/new
+    about: Please don't open a public issue for security problems.

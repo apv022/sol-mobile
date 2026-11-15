@@ -104,10 +104,11 @@ by the browser and by every other app, so the Jellyfin or Home Assistant app can
 - Any app on the phone can connect to an open tunnel. Close tunnels you don't use.
 - Apps that insist on HTTPS with a public certificate won't accept a loopback address.
 
-**When to revisit**
+**Decision (2026-11)**
 
-If people ask for "every app just works" more than they ask for coexisting with their VPN, a
-VPN mode could be added as an opt-in, never as the default.
+An opt-in VPN mode was designed and then dropped before release: taking the phone's only VPN
+slot, routing all of the phone's DNS through Sol, and the "monitor network traffic" consent
+weigh more than skipping a local port. Revisit only if users clearly ask for it.
 
 ## What is not done yet
 

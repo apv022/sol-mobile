@@ -9,8 +9,8 @@ and send them files, over Tor, from anywhere.** No port forwarding, no account, 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 ![Status: alpha](https://img.shields.io/badge/status-alpha-orange)
 
-> **Alpha.** This builds and installs, but it is new and has had little testing on real phones
-> and no independent security review. Expect rough edges, and please
+> **Alpha.** This builds, installs and runs on an Android 14 (API 34) x86_64 emulator. It has **not
+> yet been verified on a real phone**, and has had no independent security review. Expect rough edges, and please
 > [report what breaks](https://github.com/apv022/sol-mobile/issues).
 
 ## What it is
@@ -35,7 +35,8 @@ same web panel shown full-screen. There is no separate mobile codebase to drift 
 - **Send files both ways**, verified by SHA-256 on arrival.
 - **Open `sol://pair` links** from other apps: the panel's join screen opens with the link
   filled in, and you confirm there.
-- **Keep it running**: the node stays up behind a notification with a *Stop* button.
+- **Keep it running**: the node stays up behind a notification with a *Stop* button. If the node exits for any reason the service did not ask for, the service restarts it (with backoff; it gives up after 15 quick deaths in a row, and opening the app starts it again). It re-checks its connections when the network changes.
+- **Save downloads** through the system file picker, and upload files through the file chooser.
 
 ## Install
 
@@ -78,14 +79,17 @@ Gradle or Android Studio. To build against your own checkout of Sol: `SOL_SRC=..
 - **arm64 phones only in releases.** No 32-bit build. `ABIS="arm64-v8a x86_64" ./build.sh` adds an
   x86_64 build for the emulator (the node is a static linux/amd64 binary there; Tor is the
   Tor Project's x86_64 bundle, checked against the same signed checksums). Emulator-only: do not ship it.
-- **Downloads from the Files screen** don't save to the phone yet. Sending files to a peer works.
 - **Battery.** A node that stays reachable keeps a Tor connection open. Stop it from the
   notification when you don't need the phone to be reachable.
 - **Android may stop it.** The node and Tor run as child processes of the app, which aggressive
   battery savers and Android 12+'s process limits can kill. If it stops, open the app again, and
   exempt Sol from battery optimisation.
 - **No QR scanner yet**: paste the pairing link.
-- **Not on Google Play or F-Droid.**
+- **Not on Google Play or F-Droid.** The APK from the releases page is the only way to install it.
+- **Verified on an emulator only** (API 34, x86_64). Not yet checked on a real phone: battery use
+  and Doze, switching between Wi-Fi and mobile data, Android 12+ refusing a background start,
+  switching dark mode while the app is open, and the panel's width after rotating. The checklist
+  is in [docs/DESIGN.md](docs/DESIGN.md#test-on-a-real-phone).
 
 ## Security
 

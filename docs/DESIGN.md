@@ -111,23 +111,57 @@ VPN mode could be added as an opt-in, never as the default.
 
 ## What is not done yet
 
+The service, the native screens, downloads and `sol://pair` handling were run on an API 34 x86_64 emulator
+(`ABIS="arm64-v8a x86_64" ./build.sh`) with software rendering, not on a real phone. The release
+APK is arm64-only and has not been run on hardware by the project.
+
+Not verified on a real phone (see the checklist below):
+
+- Battery use, and Doze with the screen off (including the battery exemption and the reconnect on
+  leaving Doze).
+- Switching between Wi-Fi and mobile data. On the emulator, Wi-Fi off/on and airplane mode reach
+  `network-changed` and Tor came back online.
+- Android 12+ refusing a background start of the service. The refusal path (logs it, reports
+  stopped, no retry, opening the app starts it) is unit-tested and reasoned about, not seen on a device.
+- A dark/light switch while the app is open (the activity is recreated; reviewed in code and seen
+  on the emulator only).
+- The panel's width after rotating (a report of portrait width after rotation had no cause in the
+  code).
+
+Not built:
+
 - Orphaned `libtor.so` processes after a hard kill of the node are not hunted down.
-- No wake lock or `WorkManager` watchdog: if Android refuses a sticky restart from the background
-  (Android 12+), the node stays off, reported as stopped, until the user opens the app. The refusal
-  path has not been seen on a real device.
-- Landscape and dark-mode bars were reviewed in code only: rotation is handled in the activity (insets
-  are re-requested), a light/dark switch recreates it. A report of the WebView at portrait width after
-  rotating had no cause in the code; check on a phone.
+- No wake lock or `WorkManager` watchdog.
 - Starting at boot.
-- Reconnecting on network change was run on an emulator (Wi-Fi off/on and airplane mode both
-  reach `network-changed` and restart Tor, which came back online), not yet on a real phone.
 - In-process node (gomobile) instead of child processes, so Android's process limits can't
   kill tor behind the app's back.
-- 32-bit ARM, release signing, F-Droid metadata. (An opt-in x86_64 build exists for the emulator only.)
-- QR scanner for pairing links (`sol://pair` links from other apps are handled).
+- 32-bit ARM, release signing (the APK is signed with a debug key), Google Play, F-Droid metadata.
+  An opt-in x86_64 build exists for the emulator only.
+- QR scanner for pairing links (`sol://pair` links from other apps are handled and prefill the
+  join screen; they never pair by themselves).
 - Downloads always ask where to save (system file picker); no silent save to Downloads.
-- The native screens, downloads and `sol://pair` flow have only been compiled, not run on a device.
 - iOS. It cannot run child processes at all, so it needs the in-process node first.
+
+### Test on a real phone
+
+Install the release APK on an arm64 phone (Android 8+), pair it with a node you control, then:
+
+1. First run: the notification permission prompt and the battery exemption prompt appear once,
+   with an explanation. Decline each once and check the app still runs.
+2. Screen off for 30+ minutes on battery: is the node still reachable from the peer? What did it
+   cost in battery? Repeat with the battery exemption granted.
+3. Walk from Wi-Fi to mobile data and back, and toggle airplane mode: the notification says
+   reconnecting, then connected, and a tunnel opened before the switch works again.
+4. Swipe the app away, and force-stop it: does the node come back, and does opening the app start
+   it? Do this once from a background state to see Android 12+ refuse the restart (the app should
+   show stopped, not crash-loop).
+5. Switch system dark mode while the panel is open: no light strip under the tab bar.
+6. Rotate the phone on the panel, the loading screen and the error screen: the panel uses the
+   full width afterwards.
+7. Open a `sol://pair` link from another app: the join screen is filled in and nothing pairs until
+   you confirm.
+8. Download a shared file and upload one through the pickers.
+9. Stop the node from the notification: it stays stopped until you open the app.
 
 ## Testing on the emulator
 

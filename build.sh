@@ -6,7 +6,7 @@
 #   ./build.sh            build a debug APK for arm64 phones
 #   ABIS="arm64-v8a x86_64" ./build.sh   also include x86_64 (for the emulator)
 #   ./build.sh setup      only download the toolchain into .toolchain/
-#   ./build.sh test       compile and run the plain-Java unit tests (app/src/.../core, test/)
+#   ./build.sh test       compile and run the plain-Java unit tests (needs only the JDK)
 #   ./build.sh java       only compile the app's Java against android.jar (no Go, no APK)
 #
 # Needs: bash, curl, tar, unzip, zip, gpg, and Go 1.24+. Everything else (a
@@ -50,7 +50,8 @@ TOR_KEY=EF6E286DDA85EA2A4BA7DE684E2C6E8793298290
 
 say() { printf '\n== %s\n' "$*"; }
 
-setup() {
+# The JDK alone is enough for the plain-Java unit tests, so `test` stops here.
+setup_jdk() {
   mkdir -p "$TC/dl"
   if [ ! -x "$TC/jdk/bin/javac" ]; then
     say "JDK 17 (Eclipse Temurin)"
@@ -58,6 +59,10 @@ setup() {
     mkdir -p "$TC/jdk" && tar -xzf "$TC/dl/jdk.tar.gz" -C "$TC/jdk" --strip-components=1 && rm "$TC/dl/jdk.tar.gz"
   fi
   export JAVA_HOME=$TC/jdk PATH=$TC/jdk/bin:$PATH
+}
+
+setup() {
+  setup_jdk
   if [ ! -x "$TC/sdk/build-tools/$BUILD_TOOLS/aapt2" ] || [ ! -f "$TC/sdk/platforms/$PLATFORM/android.jar" ]; then
     say "Android SDK build tools $BUILD_TOOLS and $PLATFORM"
     if [ ! -x "$TC/sdk/cmdline-tools/latest/bin/sdkmanager" ]; then
@@ -66,7 +71,9 @@ setup() {
       rm "$TC/dl/cmdline-tools.zip"
     fi
     echo "This accepts the Android SDK licence terms (https://developer.android.com/studio/terms)."
-    yes | "$TC/sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$TC/sdk" --licenses >/dev/null
+    # `yes` dies of SIGPIPE once sdkmanager stops reading, which pipefail would report as a
+    # failure; `|| true` hides only yes's status, the pipeline still returns sdkmanager's.
+    { yes || true; } | "$TC/sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$TC/sdk" --licenses >/dev/null
     "$TC/sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$TC/sdk" "build-tools;$BUILD_TOOLS" "platforms;$PLATFORM" >/dev/null
   fi
   local abi
@@ -159,7 +166,7 @@ java_only() {
 
 case "${1:-}" in
   setup) setup ;;
-  test) setup; unit_tests ;;
+  test) setup_jdk; unit_tests ;;
   java) setup; java_only ;;
   *) setup; unit_tests; build ;;
 esac

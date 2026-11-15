@@ -7,6 +7,7 @@
 #   ABIS="arm64-v8a x86_64" ./build.sh   also include x86_64 (for the emulator)
 #   ./build.sh setup      only download the toolchain into .toolchain/
 #   ./build.sh test       compile and run the plain-Java unit tests (needs only the JDK)
+#   ./build.sh versioncode 0.1.0-beta.2   print the versionCode for a version (1000042)
 #   ./build.sh java       only compile the app's Java against android.jar (no Go, no APK)
 #
 # Needs: bash, curl, tar, unzip, zip, gpg, and Go 1.24+. Everything else (a
@@ -21,6 +22,14 @@
 #   SOL_SRC   the Sol source tree to build the node from (default: ../Sol if
 #             it exists, else a clone of github.com/apv022/sol at SOL_REF)
 #   SOL_REF   git ref to clone when SOL_SRC is not set (default: main)
+#   SOL_VERSION  version name without a leading v, e.g. 0.1.0-alpha.2. Overrides
+#             VERSION_NAME; versionCode is derived: ((major*100+minor)*100+patch)*100+suffix
+#             with alpha.N -> N (1-39), beta.N -> 40+N, rc.N -> 70+N, none -> 99.
+#             Unset: 0.1.0-alpha, code 1.
+#   SOL_KEYSTORE, SOL_KEYSTORE_PASS, SOL_KEY_ALIAS   all three set: sign with that
+#             PKCS12 key (passwords are passed by env var, never in argv). Otherwise
+#             the per-machine debug key in .toolchain/ is used.
+# After a build, build/SOURCE holds the Sol ref and full commit that was built.
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=$PWD
@@ -35,6 +44,28 @@ MIN_SDK=26                  # Tor's Android build needs 26
 TARGET_SDK=34
 VERSION_NAME=0.1.0-alpha
 VERSION_CODE=1
+
+# Prints the versionCode for a version like 1.2.3, 1.2.3-alpha.4, -beta.N, -rc.N.
+version_code() {
+  local re='^([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{1,2})(-(alpha|beta|rc)\.([0-9]{1,2}))?$'
+  [[ $1 =~ $re ]] || { echo "unparseable version '$1' (want X.Y.Z or X.Y.Z-alpha.N|beta.N|rc.N)" >&2; return 1; }
+  local suf=99 n
+  if [ -n "${BASH_REMATCH[5]}" ]; then
+    n=$((10#${BASH_REMATCH[6]}))
+    case ${BASH_REMATCH[5]} in
+      alpha) [ "$n" -ge 1 ] && [ "$n" -le 39 ] && suf=$n ;;
+      beta)  [ "$n" -ge 1 ] && [ "$n" -le 29 ] && suf=$((40 + n)) ;;
+      rc)    [ "$n" -ge 1 ] && [ "$n" -le 28 ] && suf=$((70 + n)) ;;
+    esac
+    [ "$suf" != 99 ] || { echo "prerelease number out of range in '$1'" >&2; return 1; }
+  fi
+  echo $(( ((10#${BASH_REMATCH[1]} * 100 + 10#${BASH_REMATCH[2]}) * 100 + 10#${BASH_REMATCH[3]}) * 100 + suf ))
+}
+if [ "${1:-}" = versioncode ]; then version_code "${2:-}"; exit; fi
+if [ -n "${SOL_VERSION:-}" ]; then
+  VERSION_CODE=$(version_code "$SOL_VERSION")
+  VERSION_NAME=$SOL_VERSION
+fi
 ABIS=${ABIS:-arm64-v8a}
 # Per-ABI names: Go's GOARCH, Tor's bundle name, and where the bundle is unpacked.
 # (arm64 keeps the original .toolchain/tor path so existing toolchains are reused.)
@@ -111,6 +142,7 @@ build() {
   fi
   local rev; rev=$(git -C "$src" rev-parse --short HEAD 2>/dev/null || echo unknown)
   echo "from $src ($rev)"
+  printf 'ref=%s\ncommit=%s\n' "${SOL_REF:-local}" "$(git -C "$src" rev-parse HEAD 2>/dev/null || echo unknown)" > "$OUT/SOURCE"
   # Programs must be named lib*.so to be unpacked where Android lets an app run them.
   local abi
   for abi in $ABIS; do
@@ -133,8 +165,15 @@ build() {
   (cd "$OUT/dex" && zip -q "$OUT/unsigned.apk" classes.dex)
   (cd "$OUT" && zip -q "$OUT/unsigned.apk" $(for abi in $ABIS; do echo lib/$abi/libsol.so lib/$abi/libtor.so; done))
   "$bt/zipalign" -f -p 4 "$OUT/unsigned.apk" "$OUT/aligned.apk"
-  "$bt/apksigner" sign --ks "$TC/debug.keystore" --ks-pass pass:android --key-pass pass:android \
-     --out "$OUT/sol.apk" "$OUT/aligned.apk"
+  if [ -n "${SOL_KEYSTORE:-}" ] && [ -n "${SOL_KEYSTORE_PASS:-}" ] && [ -n "${SOL_KEY_ALIAS:-}" ]; then
+    echo "signing with the release key (alias $SOL_KEY_ALIAS)"
+    "$bt/apksigner" sign --ks "$SOL_KEYSTORE" --ks-pass env:SOL_KEYSTORE_PASS --key-pass env:SOL_KEYSTORE_PASS \
+       --ks-key-alias "$SOL_KEY_ALIAS" --out "$OUT/sol.apk" "$OUT/aligned.apk"
+  else
+    echo "signing with the DEBUG key (set SOL_KEYSTORE, SOL_KEYSTORE_PASS, SOL_KEY_ALIAS for a release)"
+    "$bt/apksigner" sign --ks "$TC/debug.keystore" --ks-pass pass:android --key-pass pass:android \
+       --out "$OUT/sol.apk" "$OUT/aligned.apk"
+  fi
   "$bt/apksigner" verify "$OUT/sol.apk"
   rm -f "$OUT/unsigned.apk" "$OUT/aligned.apk" "$OUT/res.zip" "$OUT/sol.apk.idsig"
   say "Built $OUT/sol.apk ($(du -h "$OUT/sol.apk" | cut -f1))"

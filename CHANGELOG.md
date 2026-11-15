@@ -6,6 +6,7 @@ Run on an API 34 x86_64 emulator; not yet verified on a real phone (see docs/DES
 
 ### Added
 
+- Tagged releases: pushing `vX.Y.Z[-alpha.N]` builds, signs with the release key and publishes the APK, `SHA256SUMS` and notes. `build.sh` takes `SOL_VERSION` (derives versionCode) and `SOL_KEYSTORE`/`SOL_KEYSTORE_PASS`/`SOL_KEY_ALIAS`; the first release-signed build needs a one-time uninstall of the debug-signed alpha.
 - The node is supervised: if it dies it is started again with a growing delay; only Stop leaves it off.
 - Reconnects when the phone changes network (Wi-Fi, mobile data, airplane mode, back from Doze) by running `sol network-changed`, if the node supports it.
 - The panel moves to a free port when 8080 is taken.

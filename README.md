@@ -40,12 +40,16 @@ same web panel shown full-screen. There is no separate mobile codebase to drift 
 
 ## Install
 
-Download `sol.apk` from the [latest release](https://github.com/apv022/sol-mobile/releases),
+Download `sol-<version>.apk` from the [latest release](https://github.com/apv022/sol-mobile/releases),
 open it on the phone, and allow installing from that source when Android asks.
 
 - Needs Android 8.0 or newer and a 64-bit ARM phone (nearly every phone since 2017).
-- The APK is signed with a debug key, so Android may warn about an unknown developer, and a
-  later release signed with a different key will need an uninstall first.
+- Releases are signed with a release key (tagged builds made by CI; the signing certificate's
+  SHA-256 is in each release's notes, and `SHA256SUMS` is attached). Android may still warn about an
+  unknown developer because the app is not from a store.
+- The v0.1.0-alpha build was signed with a debug key: uninstall it once before installing a later
+  release, since Android refuses to update across signing keys. Local `./build.sh` builds use a
+  per-machine debug key unless you set `SOL_KEYSTORE`, `SOL_KEYSTORE_PASS` and `SOL_KEY_ALIAS`.
 
 ## Permissions, and why there is no VPN permission
 

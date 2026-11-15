@@ -9,7 +9,11 @@
     <!-- The node keeps running while the app is in the background. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <!-- The "Sol is running" notification (Android 13+ asks the user). -->
+    <!-- Lets the service see network changes (Wi-Fi <-> mobile) and reconnect. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Lets the app ask (never silently) to be exempt from battery optimisation. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- The status notification (Android 13+ asks the user). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- allowBackup=false: node.key is this device's identity and must not
@@ -25,12 +29,20 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard|uiMode"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- sol://pair?... links open the panel's join screen. They never pair by themselves. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sol" android:host="pair" />
             </intent-filter>
         </activity>
 

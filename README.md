@@ -33,6 +33,8 @@ same web panel shown full-screen. There is no separate mobile codebase to drift 
   anything else it shares with the phone. It opens in your browser at `127.0.0.1:<port>`, and
   any app on the phone can use that address too (point the Jellyfin app at it).
 - **Send files both ways**, verified by SHA-256 on arrival.
+- **Open `sol://pair` links** from other apps: the panel's join screen opens with the link
+  filled in, and you confirm there.
 - **Keep it running**: the node stays up behind a notification with a *Stop* button.
 
 ## Install
@@ -51,6 +53,7 @@ open it on the phone, and allow installing from that source when Android asks.
 | Internet | Tor, and direct connections to your peers if you turn direct mode on |
 | Foreground service | Keeps the node running while the app is in the background |
 | Notifications | The "Sol is running" notification Android requires for that |
+| Battery optimisation | Asked once, with an explanation, so Android doesn't cut the node off in the background |
 
 Sol does **not** ask for the VPN permission. Android allows one VPN at a time, so taking that
 slot would switch off Tailscale, WireGuard, Proton or whatever you already run. Instead, a paired
@@ -62,6 +65,7 @@ reasoning and the trade-offs are in [docs/DESIGN.md](docs/DESIGN.md).
 ```sh
 git clone https://github.com/apv022/sol-mobile && cd sol-mobile
 ./build.sh            # -> build/sol.apk
+./build.sh test       # unit tests for the service logic (plain JVM, no device)
 ```
 
 You need Linux (x86-64), `bash`, `curl`, `unzip`, `zip`, `gpg` and Go 1.24+. The script downloads
@@ -71,7 +75,9 @@ Gradle or Android Studio. To build against your own checkout of Sol: `SOL_SRC=..
 
 ## Known limits
 
-- **arm64 only.** No 32-bit or x86 builds yet.
+- **arm64 phones only in releases.** No 32-bit build. `ABIS="arm64-v8a x86_64" ./build.sh` adds an
+  x86_64 build for the emulator (the node is a static linux/amd64 binary there; Tor is the
+  Tor Project's x86_64 bundle, checked against the same signed checksums). Emulator-only: do not ship it.
 - **Downloads from the Files screen** don't save to the phone yet. Sending files to a peer works.
 - **Battery.** A node that stays reachable keeps a Tor connection open. Stop it from the
   notification when you don't need the phone to be reachable.

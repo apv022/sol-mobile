@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The launcher icon background and the accent stay the same in both modes. -->
+    <color name="bg">#0d1117</color>
+    <color name="accent">#ff8c2b</color>
+    <!-- Native screens and system bars follow the phone's light/dark setting. -->
+    <color name="win_bg">#f6f8fa</color>
+    <color name="win_fg">#1f2328</color>
+    <color name="win_muted">#59636e</color>
+</resources>

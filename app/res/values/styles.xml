@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#0d1117</color>
-    <color name="accent">#ff8c2b</color>
-    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/bg</item>
-        <item name="android:statusBarColor">@color/bg</item>
-        <item name="android:navigationBarColor">@color/bg</item>
+    <!-- windowBackground is also the splash: no white flash before the first frame.
+         Bars are transparent; MainActivity draws edge to edge and pads for insets. -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/win_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:colorAccent">@color/accent</item>
     </style>
 </resources>

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+- Opening the app (or relaunching it while it is open) starts the node again if the service had stopped; before, a node that exited cleanly left the panel saying it would reconnect by itself, for ever.
+- `ABIS="arm64-v8a x86_64" ./build.sh` builds an x86_64 APK for emulators (arm64 stays the default).
+
+- The node is supervised: if it dies it is started again with a growing delay; only Stop leaves it off.
+- Reconnects when the phone changes network (Wi-Fi, mobile data, back from Doze), if the node supports `network-changed`.
+- The panel moves to a free port when 8080 is taken.
+- The node's log is capped (two files of 1 MiB) and the notification says what is really happening.
+- A stale control socket left by a kill no longer blocks the next start.
+- Unit tests for the service logic: `./build.sh test`.
+- A native loading screen shows what the node is doing while it starts, retries until the panel answers, and offers "Restart node" and "View log" (with Share) if it never does.
+- The panel is loaded from the node's real port, and re-pointed if the port changes.
+- A crashed WebView renderer is rebuilt; panel history survives rotation and process death; Back goes through panel history first.
+- Edge-to-edge window with light and dark system bars, and the keyboard resizes the panel.
+- Downloads from the panel are saved through the system file picker, with names cleaned.
+- `sol://pair?...` links open the panel's join screen with the link filled in (never pairs by itself). The WebView user agent ends in `SolAndroid/<version>`.
+- First run asks for the notification permission (Android 13+) and offers the battery exemption once, with an explanation.
+- Hardening: no mixed content, no Safe Browsing lookups of loopback URLs, other links open in the browser.
+
 ## [0.1.0-alpha] - 2026-11-11
 
 First build.

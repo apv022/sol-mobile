@@ -73,7 +73,7 @@ git clone https://github.com/apv022/sol-mobile && cd sol-mobile
 ./build.sh test       # unit tests for the service logic (plain JVM, no device)
 ```
 
-You need Linux (x86-64), `bash`, `curl`, `unzip`, `zip`, `gpg` and Go 1.24+. The script downloads
+You need Linux (x86-64), `bash`, `curl`, `unzip`, `zip`, `gpg` and Go 1.26+. The script downloads
 a JDK, the Android SDK build tools and Tor's Android build into `.toolchain/` (about 1 GB, nothing
 installed system-wide), checks Tor against the Tor Project's signing key, and builds without
 Gradle or Android Studio. To build against your own checkout of Sol: `SOL_SRC=../sol ./build.sh`.

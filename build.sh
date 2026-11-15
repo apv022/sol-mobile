@@ -10,7 +10,7 @@
 #   ./build.sh versioncode 0.1.0-beta.2   print the versionCode for a version (1000042)
 #   ./build.sh java       only compile the app's Java against android.jar (no Go, no APK)
 #
-# Needs: bash, curl, tar, unzip, zip, gpg, and Go 1.24+. Everything else (a
+# Needs: bash, curl, tar, unzip, zip, gpg, and Go 1.26+. Everything else (a
 # JDK, the Android SDK build tools, Tor's Android build) is downloaded into
 # .toolchain/ on first use, about 1 GB. Nothing is installed system-wide.
 #

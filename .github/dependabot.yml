@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # One grouped PR, so a bump arrives as a single change CI can pass or fail as a whole.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

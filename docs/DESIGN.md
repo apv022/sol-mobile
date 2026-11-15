@@ -31,8 +31,11 @@ The phone is a hostile place for a long-running network program. What the servic
 - **Supervision.** The node runs with `SOL_SUPERVISED=1`, so "Restart" in the panel makes it
   exit 75 instead of spawning a replacement the service cannot see. Exit 75 restarts at once; a
   crash or a kill (Android's low-memory killer, 137) restarts after 1 s, doubling to 60 s
-  (`Backoff`); a clean exit after a normal run (`sol stop`) stops the service. After three quick
-  failures the notification says "keeps failing to start". `START_STICKY` brings the service back
+  (`Backoff`); the node exiting 0 is restarted too (SIGTERM and `sol stop` both give 0).
+  The service stops the node only itself (`stopping`: user Stop, teardown), and `ExitPolicy` decides
+  from that, not from the exit code. After three quick failures the notification says "keeps
+  failing to start"; after 15 in a row (about ten minutes of backoff) the service gives up and
+  reports stopped, and opening the app starts it again (`NodeStart`). `START_STICKY` brings the service back
   after Android kills the app; the user's Stop returns `START_NOT_STICKY`.
 - **Stale lock.** Before every start the service looks at `control.sock`. If something answers, it
   is a node from a killed service and is asked to `sol stop`; if nothing answers, the file is a
@@ -48,6 +51,11 @@ The phone is a hostile place for a long-running network program. What the servic
 - **Truthful status.** The service polls the node's `/api/status` every 5 s and turns it into a
   `Phase` (starting, connecting, connected, reconnecting, no network, restarting, failing). The
   notification and the `io.solarae.sol.STATUS` broadcast report it.
+- **Refused foreground start (Android 12+).** A sticky restart happens in the background, where
+  `startForeground` throws `ForegroundServiceStartNotAllowedException`. The service logs it, sets
+  the phase to stopped, calls `stopSelf()` and returns `START_NOT_STICKY`, so Android does not retry
+  and there is no crash loop. The next time the app opens, `ensureNode` (`NodeStart.shouldStart`)
+  sees stopped and starts the service from the foreground, which is allowed.
 - **Log.** The node's output and the service's own `[app]` lines go to `files/sol/sol.log`, at
   most 1 MiB, then `sol.log.1`. Pairing links and keys are never logged by the service; the node
   does not log them either.
@@ -105,7 +113,11 @@ VPN mode could be added as an opt-in, never as the default.
 
 - Orphaned `libtor.so` processes after a hard kill of the node are not hunted down.
 - No wake lock or `WorkManager` watchdog: if Android refuses a sticky restart from the background
-  (Android 12+), the node stays off until the user opens the app.
+  (Android 12+), the node stays off, reported as stopped, until the user opens the app. The refusal
+  path has not been seen on a real device.
+- Landscape and dark-mode bars were reviewed in code only: rotation is handled in the activity (insets
+  are re-requested), a light/dark switch recreates it. A report of the WebView at portrait width after
+  rotating had no cause in the code; check on a phone.
 - Starting at boot.
 - Reconnecting on network change was run on an emulator (Wi-Fi off/on and airplane mode both
   reach `network-changed` and restart Tor, which came back online), not yet on a real phone.
@@ -127,5 +139,4 @@ VPN mode could be added as an opt-in, never as the default.
 - Software rendering is slow: SystemUI ANR dialogs ("Wait") are normal; Tor was online in about
   3 minutes from a cold install, the panel shows in about 12 s.
 - `adb shell` can read `files/sol/sol.log` on a userdebug image. `kill` of the node works only
-  sometimes from the shell user; a clean SIGTERM makes the node exit 0, which the service treats
-  as "stopped on request" (a real Android kill is SIGKILL and is restarted after about 1 s).
+  sometimes from the shell user; a clean SIGTERM makes the node exit 0, which the service now restarts after about 1 s, like a SIGKILL.

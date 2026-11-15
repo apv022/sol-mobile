@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- A node that exits on SIGTERM (status 0) is restarted: the service only treats an exit as "stopped" when it asked for it itself. After 15 early deaths in a row it gives up and the app offers to start it.
+- If Android 12+ refuses a background restart of the service, it logs that, reports "stopped" and does not retry; opening the app starts it.
+- Dark mode: the activity is recreated on a light/dark switch (the window background and bar icons were left in the old mode, which showed as a light strip under the tab bar), and the 3-button navigation scrim is off.
+- The "should the app start the service" decision is plain Java with unit tests.
 - Opening the app (or relaunching it while it is open) starts the node again if the service had stopped; before, a node that exited cleanly left the panel saying it would reconnect by itself, for ever.
 - `ABIS="arm64-v8a x86_64" ./build.sh` builds an x86_64 APK for emulators (arm64 stays the default).
 

@@ -20,6 +20,7 @@ public final class CoreTests {
         run("backoff doubles and caps", CoreTests::backoff);
         run("backoff resets after a stable run", CoreTests::backoffReset);
         run("exit policy", CoreTests::exitPolicy);
+        run("activity starts a stopped service", CoreTests::nodeStart);
         run("debounce ignores the first report", CoreTests::debounceFirst);
         run("debounce waits for the network to settle", CoreTests::debounceSettle);
         run("debounce flapping back cancels", CoreTests::debounceFlap);
@@ -66,6 +67,10 @@ public final class CoreTests {
         }
     }
 
+    private static void no(boolean b, String what) {
+        yes(!b, what);
+    }
+
     static void backoff() {
         Backoff b = new Backoff();
         eq(1000L, b.next(0));
@@ -92,14 +97,43 @@ public final class CoreTests {
     }
 
     static void exitPolicy() {
-        eq(ExitPolicy.Action.RESTART_NOW, ExitPolicy.afterExit(75, 10));
-        eq(ExitPolicy.Action.STOP, ExitPolicy.afterExit(0, 60_000));
-        eq(ExitPolicy.Action.RESTART_LATER, ExitPolicy.afterExit(0, 100));
-        eq(ExitPolicy.Action.RESTART_LATER, ExitPolicy.afterExit(137, 600_000));
-        eq(ExitPolicy.Action.RESTART_LATER, ExitPolicy.afterExit(1, 600_000));
+        ExitPolicy.Action rn = ExitPolicy.Action.RESTART_NOW, rl = ExitPolicy.Action.RESTART_LATER;
+        // the service asked: stopped, whatever the code
+        eq(ExitPolicy.Action.STOP, ExitPolicy.afterExit(0, 60_000, true, 0));
+        eq(ExitPolicy.Action.STOP, ExitPolicy.afterExit(143, 100, true, 3));
+        eq(ExitPolicy.Action.STOP, ExitPolicy.afterExit(75, 100, true, 0));
+        // the node asked for a restart
+        eq(rn, ExitPolicy.afterExit(75, 10, false, 0));
+        // unexpected exit 0 (SIGTERM from outside, sol stop): restarted, after a quick or long run
+        eq(rl, ExitPolicy.afterExit(0, 600_000, false, 0));
+        eq(rl, ExitPolicy.afterExit(0, 100, false, 0));
+        // crashes and kills
+        eq(rl, ExitPolicy.afterExit(137, 600_000, false, 0));
+        eq(rl, ExitPolicy.afterExit(1, 100, false, 5));
+        // a crash loop gives up, a healthy run resets the count
+        eq(rl, ExitPolicy.afterExit(1, 100, false, ExitPolicy.GIVE_UP_AFTER - 2));
+        eq(ExitPolicy.Action.GIVE_UP, ExitPolicy.afterExit(1, 100, false, ExitPolicy.GIVE_UP_AFTER - 1));
+        eq(ExitPolicy.Action.GIVE_UP, ExitPolicy.afterExit(0, 100, false, 100));
+        eq(rl, ExitPolicy.afterExit(1, Backoff.STABLE_MS, false, 100));
         yes(ExitPolicy.describe(137).contains("SIGKILL"), "137");
         yes(ExitPolicy.describe(143).contains("15"), "143");
         yes(ExitPolicy.describe(2).contains("2"), "2");
+    }
+
+    static void nodeStart() {
+        long g = NodeStart.GRACE_MS;
+        // never asked yet: onCreate does that, not ensureNode
+        no(NodeStart.shouldStart(0, 100_000, Phase.STOPPED), "never asked");
+        // stopped well after the ask: start (the regression)
+        yes(NodeStart.shouldStart(1_000, 1_000 + g + 1, Phase.STOPPED), "stopped");
+        // within the grace period the STOPPED is the old one
+        no(NodeStart.shouldStart(1_000, 1_000 + g, Phase.STOPPED), "grace");
+        // anything but STOPPED means the service is alive
+        for (Phase p : Phase.values()) {
+            if (p != Phase.STOPPED) {
+                no(NodeStart.shouldStart(1_000, 100_000, p), "alive " + p);
+            }
+        }
     }
 
     static void debounceFirst() {

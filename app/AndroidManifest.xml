@@ -27,9 +27,13 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
 
+        <!-- uiMode is not handled here on purpose: the activity is recreated when the
+             phone switches between light and dark, so the window background, bar
+             icons and native screens take the new theme. The WebView history is
+             saved and restored across that. -->
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard|uiMode"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask">

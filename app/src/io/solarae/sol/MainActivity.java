@@ -42,6 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import io.solarae.sol.core.FileNames;
+import io.solarae.sol.core.NodeStart;
 import io.solarae.sol.core.PairLink;
 import io.solarae.sol.core.Phase;
 import io.solarae.sol.core.RotatingLog;
@@ -146,6 +147,11 @@ public class MainActivity extends Activity {
         }
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= 29) {
+            // Otherwise 3-button navigation paints its own scrim strip (light
+            // in a light theme) under the transparent bar.
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
         root.setOnApplyWindowInsetsListener((v, in) -> {
             int l, t, r, b;
             if (Build.VERSION.SDK_INT >= 30) {
@@ -290,8 +296,7 @@ public class MainActivity extends Activity {
      * panel keeps saying "reconnects by itself" about a node that is gone.
      */
     private void ensureNode() {
-        if (nodeAskedAt != 0 && NodeService.phase() == Phase.STOPPED
-                && SystemClock.elapsedRealtime() - nodeAskedAt > 3_000) {
+        if (NodeStart.shouldStart(nodeAskedAt, SystemClock.elapsedRealtime(), NodeService.phase())) {
             startNode();
         }
     }
@@ -701,6 +706,13 @@ public class MainActivity extends Activity {
         if (loadedPort != 0 && NodeService.panelPort(this) != loadedPort) {
             onStatus(NodeService.panelPort(this));
         }
+    }
+
+    /** Rotation is handled here (see the manifest): the bars moved, so ask for the insets again. */
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration c) {
+        super.onConfigurationChanged(c);
+        root.requestApplyInsets();
     }
 
     @Override

@@ -240,9 +240,15 @@ public class NodeService extends Service {
             }
         } catch (RuntimeException e) {
             // Android 12+ refuses a foreground start from the background (for
-            // example a sticky restart); the user opening the app starts it again.
+            // example a sticky restart): ForegroundServiceStartNotAllowedException.
+            // Not sticky, so Android does not retry and loop; the user opening
+            // the app starts it again (MainActivity.ensureNode).
             Log.e(TAG, "cannot run in the foreground", e);
             log.line("[app] cannot run in the foreground: " + e);
+            if (supervisor == null) {
+                // Nothing runs, so say so: the activity then shows "stopped" and starts it on open.
+                setPhase(Phase.STOPPED, "");
+            }
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -320,10 +326,14 @@ public class NodeService extends Service {
                 return;
             }
             long up = SystemClock.elapsedRealtime() - began;
-            ExitPolicy.Action a = ExitPolicy.afterExit(code, up);
+            // "stopping" is the only way the service asks the node to stop
+            // (onDestroy), and it returned above. Any exit that reaches here
+            // was not asked for, so the code does not decide whether to stop.
+            ExitPolicy.Action a = ExitPolicy.afterExit(code, up, false, backoff.failures());
             log.line("[app] the node " + ExitPolicy.describe(code) + " after " + up / 1000 + " s");
-            if (a == ExitPolicy.Action.STOP) {
-                log.line("[app] the node was stopped on its own request; stopping the service");
+            if (a == ExitPolicy.Action.GIVE_UP) {
+                log.line("[app] the node failed " + ExitPolicy.GIVE_UP_AFTER
+                        + " times in a row; giving up. Open the app to start it again");
                 stopSelf();
                 return;
             }

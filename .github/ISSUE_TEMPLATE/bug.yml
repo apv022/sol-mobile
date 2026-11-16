@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Sol version
-      description: Shown at the bottom of the panel's sidebar
+      label: App version
+      description: Shown at the bottom of the panel's sidebar (or run `sol version` for the node), e.g. v0.1.0-alpha.5
     validations:
       required: true
   - type: textarea

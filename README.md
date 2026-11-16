@@ -1,17 +1,26 @@
 <p align="center"><img src="docs/media/logo.svg" width="96" alt="Sol logo"></p>
 
-# Sol for Android
+<h1 align="center">Sol for Android</h1>
 
 **Your phone as a [Sol](https://github.com/apv022/sol) node: open the apps on your own machines
 and send them files, over Tor, from anywhere.** No port forwarding, no account, no VPN slot.
 
 [![build](https://github.com/apv022/sol-mobile/actions/workflows/build.yml/badge.svg)](https://github.com/apv022/sol-mobile/actions/workflows/build.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![release](https://img.shields.io/github/v/release/apv022/sol-mobile?include_prereleases&sort=semver)](https://github.com/apv022/sol-mobile/releases)
 ![Status: alpha](https://img.shields.io/badge/status-alpha-orange)
 
-> **Alpha.** This builds, installs and runs on an Android 14 (API 34) x86_64 emulator. It has **not
-> yet been verified on a real phone**, and has had no independent security review. Expect rough edges, and please
-> [report what breaks](https://github.com/apv022/sol-mobile/issues).
+[Website](https://solarae.io/sol-mobile) · [Releases](https://github.com/apv022/sol-mobile/releases) ·
+[Design notes](docs/DESIGN.md) · [Sol (desktop and server)](https://github.com/apv022/sol)
+
+
+| Peers | Services |
+|---|---|
+| <img src="docs/media/app-peers.png" alt="Sol for Android: paired machines and what they share"> | <img src="docs/media/app-services.png" alt="Sol for Android: services on this phone"> |
+
+> **Alpha (`v0.1.0-alpha.6`).** It runs, installs from a release-signed APK, and is being tested on
+> real phones; `v0.1.0` follows a week of that. It has had no independent security review. Expect
+> rough edges, and please [report what breaks](https://github.com/apv022/sol-mobile/issues).
 
 ## What it is
 
@@ -44,12 +53,19 @@ Download `sol-<version>.apk` from the [latest release](https://github.com/apv022
 open it on the phone, and allow installing from that source when Android asks.
 
 - Needs Android 8.0 or newer and a 64-bit ARM phone (nearly every phone since 2017).
-- Releases are signed with a release key (tagged builds made by CI; the signing certificate's
-  SHA-256 is in each release's notes, and `SHA256SUMS` is attached). Android may still warn about an
+- Releases are signed with a release key by CI on tagged builds, and `SHA256SUMS` is attached.
+  Check the signing certificate against this SHA-256 (also in each release's notes):
+
+  ```
+  94c19905dcdafc2da652e5b54785b0d9d94bc7a472a032a833973b8db5aa9602
+  ```
+
+  `apksigner verify --print-certs sol-<version>.apk` prints it. Android may still warn about an
   unknown developer because the app is not from a store.
-- The v0.1.0-alpha build was signed with a debug key: uninstall it once before installing a later
-  release, since Android refuses to update across signing keys. Local `./build.sh` builds use a
-  per-machine debug key unless you set `SOL_KEYSTORE`, `SOL_KEYSTORE_PASS` and `SOL_KEY_ALIAS`.
+- The first `v0.1.0-alpha` build was signed with a debug key: uninstall it once before installing
+  a later release, since Android refuses to update across signing keys. Local `./build.sh` builds
+  use a per-machine debug key unless you set `SOL_KEYSTORE`, `SOL_KEYSTORE_PASS` and
+  `SOL_KEY_ALIAS`.
 
 ## Permissions, and why there is no VPN permission
 
@@ -90,9 +106,9 @@ Gradle or Android Studio. To build against your own checkout of Sol: `SOL_SRC=..
   exempt Sol from battery optimisation.
 - **No QR scanner yet**: paste the pairing link.
 - **Not on Google Play or F-Droid.** The APK from the releases page is the only way to install it.
-- **Verified on an emulator only** (API 34, x86_64). Not yet checked on a real phone: battery use
-  and Doze, switching between Wi-Fi and mobile data, Android 12+ refusing a background start,
-  switching dark mode while the app is open, and the panel's width after rotating. The checklist
+- **Little real-phone mileage so far.** Built and tested on an API 34 emulator, now on real
+  phones. Still being checked: battery use and Doze, switching between Wi-Fi and mobile data,
+  Android 12+ refusing a background start, and the panel's width after rotating. The checklist
   is in [docs/DESIGN.md](docs/DESIGN.md#test-on-a-real-phone).
 
 ## Security

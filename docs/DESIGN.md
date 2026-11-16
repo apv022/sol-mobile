@@ -136,7 +136,7 @@ Not built:
 - Starting at boot.
 - In-process node (gomobile) instead of child processes, so Android's process limits can't
   kill tor behind the app's back.
-- 32-bit ARM, release signing (the APK is signed with a debug key), Google Play, F-Droid metadata.
+- 32-bit ARM, Google Play, F-Droid metadata.
   An opt-in x86_64 build exists for the emulator only.
 - QR scanner for pairing links (`sol://pair` links from other apps are handled and prefill the
   join screen; they never pair by themselves).

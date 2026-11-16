@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
-Run on an API 34 x86_64 emulator; not yet verified on a real phone (see docs/DESIGN.md).
+## [0.1.0-alpha.5] - 2026-11-15
+
+Pre-release, release-signed (certificate SHA-256 `94c19905dcdafc2da652e5b54785b0d9d94bc7a472a032a833973b8db5aa9602`). Built with Sol `v0.1.0-alpha.5` (versioned handshake: older nodes can't talk to it). Real-phone testing under way (see docs/DESIGN.md).
 
 ### Added
 
@@ -42,3 +44,6 @@ First build.
 - Sol's panel is the whole interface; a peer's app opens in the phone's browser.
 - Sending files from the phone through the system file picker.
 - arm64, Android 8.0 and newer. No VPN permission (docs/DESIGN.md).
+
+[Unreleased]: https://github.com/apv022/sol-mobile/compare/v0.1.0-alpha.5...HEAD
+[0.1.0-alpha.5]: https://github.com/apv022/sol-mobile/releases/tag/v0.1.0-alpha.5

@@ -18,8 +18,9 @@ and send them files, over Tor, from anywhere.** No port forwarding, no account, 
 |---|---|
 | <img src="docs/media/app-peers.png" alt="Sol for Android: paired machines and what they share"> | <img src="docs/media/app-services.png" alt="Sol for Android: services on this phone"> |
 
-> **Alpha (`v0.1.0-alpha.6`).** It runs, installs from a release-signed APK, and is being tested on
-> real phones; `v0.1.0` follows a week of that. It has had no independent security review. Expect
+> **Alpha (`v0.1.0-alpha.6`).** Verified on a Pixel running GrapheneOS (Android 16): pairing, opening your machines'
+> apps, files both ways, direct mode over Wi-Fi, Wi-Fi/mobile-data switches and Doze. One test phone
+> so far, and no independent security review yet. Expect
 > rough edges, and please [report what breaks](https://github.com/apv022/sol-mobile/issues).
 
 ## What it is
@@ -106,10 +107,10 @@ Gradle or Android Studio. To build against your own checkout of Sol: `SOL_SRC=..
   exempt Sol from battery optimisation.
 - **No QR scanner yet**: paste the pairing link.
 - **Not on Google Play or F-Droid.** The APK from the releases page is the only way to install it.
-- **Little real-phone mileage so far.** Built and tested on an API 34 emulator, now on real
-  phones. Still being checked: battery use and Doze, switching between Wi-Fi and mobile data,
-  Android 12+ refusing a background start, and the panel's width after rotating. The checklist
-  is in [docs/DESIGN.md](docs/DESIGN.md#test-on-a-real-phone).
+- **One test phone so far:** a Pixel running GrapheneOS (Android 16). Other phones and Android versions haven't been
+  tried. Not yet seen on a device: Android 12+ refusing a background start, and the panel's width
+  after rotating. The checklist is in [docs/DESIGN.md](docs/DESIGN.md#test-on-a-real-phone);
+  reports from other phones are very welcome.
 
 ## Security
 

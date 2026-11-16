@@ -112,16 +112,14 @@ weigh more than skipping a local port. Revisit only if users clearly ask for it.
 
 ## What is not done yet
 
-The service, the native screens, downloads and `sol://pair` handling were run on an API 34 x86_64 emulator
-(`ABIS="arm64-v8a x86_64" ./build.sh`) with software rendering, not on a real phone. The release
-APK is arm64-only and has not been run on hardware by the project.
+The release APK (`v0.1.0-alpha.6`, arm64) is verified on a Pixel running GrapheneOS (Android 16): pairing with a
+desktop, opening its shared apps, files in both directions, direct mode (WireGuard) on the same
+Wi-Fi, switching between Wi-Fi and mobile data, the screen off / Doze, and staying up in the
+background. Earlier development ran on an API 34 x86_64 emulator (`ABIS="arm64-v8a x86_64" ./build.sh`).
+Only one phone has been tested.
 
-Not verified on a real phone (see the checklist below):
+Not yet seen on a device (see the checklist below):
 
-- Battery use, and Doze with the screen off (including the battery exemption and the reconnect on
-  leaving Doze).
-- Switching between Wi-Fi and mobile data. On the emulator, Wi-Fi off/on and airplane mode reach
-  `network-changed` and Tor came back online.
 - Android 12+ refusing a background start of the service. The refusal path (logs it, reports
   stopped, no retry, opening the app starts it) is unit-tested and reasoned about, not seen on a device.
 - A dark/light switch while the app is open (the activity is recreated; reviewed in code and seen

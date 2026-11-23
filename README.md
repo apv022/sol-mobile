@@ -1,3 +1,6 @@
+> **This is the archived proof of concept (v0.1.0-alpha).** Sol for Android has been rebuilt: see the
+> [main branch](https://github.com/apv022/sol-mobile) for the current version.
+
 <p align="center"><img src="docs/media/logo.svg" width="96" alt="Sol logo"></p>
 
 <h1 align="center">Sol for Android</h1>
